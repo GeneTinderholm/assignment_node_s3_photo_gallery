@@ -31,10 +31,10 @@ const FileUploader = {};
 
 FileUploader.single = field => upload.single(field);
 
-FileUploader.upload = file => {
+FileUploader.upload = (file, username) => {
   // Use the mime library to get the correct
   // extension for the mimetype
-  const extension = mime.getExtension(file.mimetype);
+  const extension = mime.extension(file.mimetype);
 
   // Use the path library to get a consistent
   // file name
@@ -65,7 +65,9 @@ FileUploader.upload = file => {
         const photos = require(PHOTO_DATA_PATH);
         const photo = {
           url: data.Location,
-          name: data.key
+          name: data.key,
+          username: username,
+          dateCreated: new Date()
         };
         photos[data.key] = photo;
         _writePhotoDataFile(photos);

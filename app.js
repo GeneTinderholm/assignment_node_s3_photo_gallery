@@ -82,8 +82,9 @@ app.use(morganToolkit());
 
 const ImageUpload = require("./services/imageUpload");
 
-app.get("/", (req, res) => {
+app.get(["/", "/photos"], (req, res) => {
   const photos = require("./data/photos");
+  console.log("Hello from /photos");
   res.render("welcome/index", { photos });
 });
 
@@ -98,11 +99,11 @@ app.post("/photos", mw, (req, res, next) => {
   ImageUpload.upload({
     data: req.file.buffer,
     name: req.file.originalname,
-    username: req.body.photo.username,
-    dateCreated: new Date(),
-    mimetype: req.file.mimetype
-  })
+    mimetype: req.file.mimetype},
+    req.body.photo.username
+  )
     .then(data => {
+      console.log("------------------------");
       console.log(data);
       req.flash("success", "Photo created!");
       res.redirect("/photos");
