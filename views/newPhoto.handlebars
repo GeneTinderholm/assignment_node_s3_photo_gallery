@@ -1,0 +1,17 @@
+<header class="page-header">
+  <h1>New Photo</h1>
+  <a href="/photos">Photos Gallery</a>
+</header>
+
+<form action="/photos" method="post" enctype="multipart/form-data">
+  <div class="form-group">
+    <label for="photo_file">Photo File</label>
+    <input type="file" class="form-control" name="photo[file]" id="photo_file">
+    <label for="username">Username:</label>
+    <input type="text" class="form-control" name="photo[username]" id="username">
+  </div>
+
+  <div class="form-group">
+    <input type="submit" class="btn btn-primary">
+  </div>
+</form>

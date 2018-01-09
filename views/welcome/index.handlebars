@@ -1,0 +1,25 @@
+<header class="page-header">
+  <h1>Photos Gallery</h1>
+  <a href="/photos/new">Add a New Photo</a>
+</header>
+
+
+{{#if (isEmpty photos) }}
+  <p class="text-danger">No Photos :(</p>
+{{else }}
+  <div class="row">
+    {{#each photos as |photo key| }}
+      <div class="col-xs-4">
+        <a
+          href="/photos/{{ photo.name }}?_method=delete"
+          class="text-danger">
+          &times;
+        </a>
+        <p>{{ photo.name }}</p>
+        <p>User: {{photo.username}}</p>
+        <p>Date: {{photo.dateCreated}}</p>
+        <img src="{{ photo.url }}" alt="Photo" class="img-responsive">
+      </div>
+    {{/each }}
+  </div>
+{{/if }}
