@@ -34,7 +34,7 @@ FileUploader.single = field => upload.single(field);
 FileUploader.upload = file => {
   // Use the mime library to get the correct
   // extension for the mimetype
-  const extension = mime.extension(file.mimetype);
+  const extension = mime.getExtension(file.mimetype);
 
   // Use the path library to get a consistent
   // file name

@@ -83,19 +83,19 @@ app.use(morganToolkit());
 const ImageUpload = require("./services/imageUpload");
 
 app.get("/", (req, res) => {
-  const photos = require("./../data/photos");
+  const photos = require("./data/photos");
   res.render("welcome/index", { photos });
 });
 
-router.get("photos/new", (req, res) => {
+app.get("/photos/new", (req, res) => {
   res.render("newPhoto");
 });
 
-const mw = FileUpload.single("photo[file]");
-router.post("/photos", mw, (req, res, next) => {
+const mw = ImageUpload.single("photo[file]");
+app.post("/photos", mw, (req, res, next) => {
   console.log("Files", req.file);
 
-  FileUpload.upload({
+  ImageUpload.upload({
     data: req.file.buffer,
     name: req.file.originalname,
     username: req.body.photo.username,
@@ -110,8 +110,8 @@ router.post("/photos", mw, (req, res, next) => {
     .catch(next);
 });
 
-router.delete("/photos/:id", (req, res, next) => {
-  FileUpload.remove(req.params.id)
+app.delete("/photos/:id", (req, res, next) => {
+  ImageUpload.remove(req.params.id)
     .then(() => {
       res.redirect("/photos");
     })

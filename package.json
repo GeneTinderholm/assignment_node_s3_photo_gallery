@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Austin1780/assignment_node_s3_photo_gallery#readme",
   "dependencies": {
+    "aws-sdk": "^2.179.0",
     "body-parser": "^1.18.2",
     "cookie-session": "^2.0.0-beta.3",
     "dotenv": "^4.0.0",
@@ -26,6 +27,7 @@
     "express-method-override-get-post-support": "^1.0.1",
     "load-helpers": "^1.0.1",
     "lodash": "^4.17.4",
+    "md5": "^2.2.1",
     "method-override": "^2.3.10",
     "morgan": "^1.9.0",
     "morgan-toolkit": "^1.2.2",
