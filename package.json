@@ -18,6 +18,8 @@
   "homepage": "https://github.com/Austin1780/assignment_node_s3_photo_gallery#readme",
   "dependencies": {
     "aws-sdk": "^2.179.0",
+    "bcrypt": "^1.0.3",
+    "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "cookie-session": "^2.0.0-beta.3",
     "dotenv": "^4.0.0",
@@ -25,12 +27,17 @@
     "express-flash-messages": "^0.1.1",
     "express-handlebars": "^3.0.0",
     "express-method-override-get-post-support": "^1.0.1",
+    "express-session": "^1.15.6",
     "load-helpers": "^1.0.1",
     "lodash": "^4.17.4",
     "md5": "^2.2.1",
     "method-override": "^2.3.10",
+    "mongoose": "^4.13.9",
+    "mongoose-unique-validator": "^1.0.6",
     "morgan": "^1.9.0",
     "morgan-toolkit": "^1.2.2",
-    "multer": "^1.3.0"
+    "multer": "^1.3.0",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0"
   }
 }

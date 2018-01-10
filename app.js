@@ -1,6 +1,9 @@
 const express = require("express");
 const app = express();
 
+const User = require("./models/user");
+const addUser = require("./addUser");
+
 // ----------------------------------------
 // App Variables
 // ----------------------------------------
@@ -77,15 +80,110 @@ const morganToolkit = require("morgan-toolkit")(morgan);
 app.use(morganToolkit());
 
 // ----------------------------------------
+// Template Engine
+// ----------------------------------------
+const expressHandlebars = require("express-handlebars");
+const helpers = require("./helpers");
+
+const hbs = expressHandlebars.create({
+  helpers: helpers,
+  partialsDir: "views/",
+  defaultLayout: "application"
+});
+
+app.engine("handlebars", hbs.engine);
+app.set("view engine", "handlebars");
+
+// ----------------------------------------
+// Mongoose
+// ----------------------------------------
+const mongoose = require("mongoose");
+mongoose.connect("mongodb://localhost/assignment_node_s3_photo_gallery");
+app.use((req, res, next) => {
+  if (mongoose.connection.readyState) {
+    next();
+  } else {
+    require("./mongo")().then(() => next());
+  }
+});
+
+// ----------------------------------------
+// Passport
+// ----------------------------------------
+
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+app.use(passport.initialize());
+
+// ----------------------------------------
+// Express Sessions
+// ----------------------------------------
+
+const expressSession = require("express-session");
+app.use(passport.session());
+
+// ----------------------------------------
+// Local Strategy
+// ----------------------------------------
+
+passport.use(
+  new LocalStrategy((email, password, done) => {
+    User.findOne({ email }, (err, user) => {
+      if (err) return done(err);
+      if (!user.validPassword(password)) {
+        return done(null, false, { message: "Invalid Password!" });
+      }
+      if (!user) {
+        return done(null, false, { message: "Invalid Email!" });
+      }
+      return done(null, user);
+    });
+  })
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+  User.findById(id, (err, user) => {
+    done(err, user);
+  });
+});
+
+// ----------------------------------------
+// login/logout Middlewares
+// ----------------------------------------
+
+const loggedInOnly = (req, res, next) => {
+  return req.session.passport && req.session.passport.user
+    ? next()
+    : res.redirect("/login");
+};
+
+const loggedOutOnly = (req, res, next) => {
+  return !req.user ? next() : res.redirect("/");
+};
+
+// ----------------------------------------
 // Routes
 // ----------------------------------------
 
 const ImageUpload = require("./services/imageUpload");
 
-app.get(["/", "/photos"], (req, res) => {
-  const photos = require("./data/photos");
-  console.log("Hello from /photos");
-  res.render("welcome/index", { photos });
+let currentUser;
+
+app.get(["/", "photos"], loggedInOnly, async (req, res) => {
+  try {
+    currentUser = await User.findById(req.session.passport.user);
+    const photos = require("./data/photos");
+    res.render("welcome/index", {
+      currentUser: currentUser,
+      photos: photos
+    });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.get("/photos/new", (req, res) => {
@@ -96,10 +194,12 @@ const mw = ImageUpload.single("photo[file]");
 app.post("/photos", mw, (req, res, next) => {
   console.log("Files", req.file);
 
-  ImageUpload.upload({
-    data: req.file.buffer,
-    name: req.file.originalname,
-    mimetype: req.file.mimetype},
+  ImageUpload.upload(
+    {
+      data: req.file.buffer,
+      name: req.file.originalname,
+      mimetype: req.file.mimetype
+    },
     req.body.photo.username
   )
     .then(data => {
@@ -120,19 +220,47 @@ app.delete("/photos/:id", (req, res, next) => {
 });
 
 // ----------------------------------------
-// Template Engine
+// Routes for /login
 // ----------------------------------------
-const expressHandlebars = require("express-handlebars");
-const helpers = require("./helpers");
 
-const hbs = expressHandlebars.create({
-  helpers: helpers,
-  partialsDir: "views/",
-  defaultLayout: "application"
+app.get("/login", loggedOutOnly, (req, res) => {
+  res.render("login");
 });
 
-app.engine("handlebars", hbs.engine);
-app.set("view engine", "handlebars");
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/login",
+    failureFlash: true
+  })
+);
+
+// ----------------------------------------
+// Routes for /register
+// ----------------------------------------
+
+app.get("/register", loggedOutOnly, (req, res) => {
+  res.render("register");
+});
+
+app.post("/register", loggedOutOnly, async (req, res) => {
+  const { email, password } = req.body;
+  await addUser(email, password);
+  res.redirect("/login");
+});
+
+// ----------------------------------------
+// Route for /logout
+// ----------------------------------------
+
+const onLogout = async (req, res) => {
+  req.logout();
+  req.session.passport.user = null;
+  res.redirect("/login");
+};
+
+app.get("/logout", loggedInOnly, onLogout);
 
 // ----------------------------------------
 // Server
